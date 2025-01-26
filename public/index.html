@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National News Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>National News Portal</h1>
+
+        <!-- Language Selection -->
+        <div class="language-filter">
+            <label for="language">Select Language</label>
+            <select id="language" onchange="getNews()">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+            </select>
+        </div>
+
+        <!-- Country and State Filter -->
+        <div class="search-box">
+            <input type="text" id="country" placeholder="Enter country code (e.g., us, gb, in)" onchange="getNews()">
+            <button onclick="getNews()">Get News</button>
+        </div>
+
+        <!-- State Selection -->
+        <div class="state-filter">
+            <div class="filter-heading">Check State Wise News Update</div>
+            <select id="state" onchange="getNews()">
+                <option value="">Select State</option>
+                <option value="andhra-pradesh">Andhra Pradesh</option>
+                <option value="arunachal-pradesh">Arunachal Pradesh</option>
+                <option value="assam">Assam</option>
+                <option value="bihar">Bihar</option>
+                <option value="chhattisgarh">Chhattisgarh</option>
+                <option value="goa">Goa</option>
+                <option value="gujarat">Gujarat</option>
+                <option value="haryana">Haryana</option>
+                <option value="himachal-pradesh">Himachal Pradesh</option>
+                <option value="jharkhand">Jharkhand</option>
+                <option value="karnataka">Karnataka</option>
+                <option value="kerala">Kerala</option>
+                <option value="madhya-pradesh">Madhya Pradesh</option>
+                <option value="maharashtra">Maharashtra</option>
+                <option value="manipur">Manipur</option>
+                <option value="meghalaya">Meghalaya</option>
+                <option value="mizoram">Mizoram</option>
+                <option value="nagaland">Nagaland</option>
+                <option value="odisha">Odisha</option>
+                <option value="punjab">Punjab</option>
+                <option value="rajasthan">Rajasthan</option>
+                <option value="sikkim">Sikkim</option>
+                <option value="tamil-nadu">Tamil Nadu</option>
+                <option value="telangana">Telangana</option>
+                <option value="tripura">Tripura</option>
+                <option value="uttar-pradesh">Uttar Pradesh</option>
+                <option value="uttarakhand">Uttarakhand</option>
+                <option value="west-bengal">West Bengal</option>
+                <option value="andaman-nicobar">Andaman and Nicobar Islands</option>
+                <option value="chandigarh">Chandigarh</option>
+                <option value="dadra-nagar-haveli">Dadra and Nagar Haveli</option>
+                <option value="daman-diu">Daman and Diu</option>
+                <option value="delhi">Delhi</option>
+                <option value="lakshadweep">Lakshadweep</option>
+                <option value="pondicherry">Puducherry</option>
+            </select>
+        </div>
+
+        <div class="location-info" id="location-info">
+            Showing Top Headlines for India
+        </div>
+
+        <div class="loading-spinner" id="loading-spinner">
+            <img src="https://i.gifer.com/4V0T.gif" alt="Loading...">
+        </div>
+
+        <div id="news-container" class="news-container"></div>
+    </div>
+    <script>
+        window.onload = getNews;
+        function showLoading() {
+            const spinner = document.getElementById('loading-spinner');
+            spinner.style.display = 'block';
+        }
+
+        function hideLoading() {
+            const spinner = document.getElementById('loading-spinner');
+            spinner.style.display = 'none';
+        }
+
+        async function getNews() {
+            const country = document.getElementById('country').value.toLowerCase();
+            const state = document.getElementById('state').value;
+            const language = document.getElementById('language').value;
+            const newsContainer = document.getElementById('news-container');
+
+            showLoading();
+
+            try {
+                const response = await fetch(`/api/news?country=${country}&state=${state}&language=${language}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                const articles = data.articles;
+                newsContainer.innerHTML = '';
+
+                if (articles.length === 0) {
+                    newsContainer.innerHTML = '<p>No news available for the selected region.</p>';
+                    return;
+                }
+
+                articles.forEach(article => {
+                    const newsCard = `
+            <div class="news-card">
+                <img src="${article.urlToImage || 'https://via.placeholder.com/300x200'}" alt="News Image">
+                    <h3>${article.title}</h3>
+                    <p>${article.description || 'No description available'}</p>
+                    <a href="${article.url}" target="_blank">Read More</a>
+            </div>
+                        `;
+                    newsContainer.innerHTML += newsCard;
+                });
+            } catch (error) {
+                newsContainer.innerHTML = '<p>Error fetching news. Please try again later.</p>';
+                console.error('Error:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+    </script>
+
+</body>
+
+</html>
